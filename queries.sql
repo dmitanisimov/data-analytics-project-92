@@ -1,11 +1,14 @@
 
--- Считаем количество клиентов в таблице customers
+-- МОДУЛЬ 4
+-- Считаем количество клиентов в таблице customers. 
 
 SELECT 
 COUNT(customer_id) as customers_count
 FROM customers;
 
 
+
+-- МОДУЛЬ 5
 /*
 Первый отчет о десятке лучших продавцов. Таблица состоит из трех колонок - данных о продавце, 
  суммарной выручке с проданных товаров и количестве проведенных сделок, и отсортирована по убыванию выручки:
@@ -81,4 +84,98 @@ seller,
 day_of_week,
 income
 from tab  order by   weekday_number, seller asc;
+
+
+
+
+
+
+
+-- МОДУЛЬ 6
+
+
+/*
+Первый отчет - количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+. 
+Итоговая таблица должна быть отсортирована по возрастным группам и содержать следующие поля:
+age_category - возрастная группа
+age_count - количество человек в группе
+*/
+
+
+select
+ case
+	 when age between 16 and 25 then '16-25'
+     when age between 26 and 40 then '26-40'
+     when age > 40 then '40+'
+     else 'other'
+     end as age_category,
+ COUNT(customer_id) AS age_count
+from customers group by age_category order by age_category;
+
+
+
+
+
+/*
+Во втором отчете предоставьте данные по количеству уникальных покупателей и выручке, которую они принесли. 
+Сгруппируйте данные по дате, которая представлена в числовом виде ГОД-МЕСЯЦ.
+ Итоговая таблица должна быть отсортирована по дате по возрастанию и содержать следующие поля:
+*/
+
+
+
+with tab AS(
+select
+cust.customer_id as customers_id,
+TO_CHAR(sal.sale_date, 'YYYY-MM') as selling_month,
+(sal.quantity * pro.price) as income
+from customers as cust left join sales as sal on cust.customer_id = sal.customer_id
+left join products as pro on sal.product_id = pro.product_id where sal.sale_date is not null
+)
+
+select
+selling_month,
+COUNT(distinct customers_id) AS total_customers,
+SUM(income) as income
+from tab group by selling_month order by selling_month;
+
+
+
+/*
+Третий отчет следует составить о покупателях, первая покупка
+которых была в ходе проведения акций (акционные товары отпускали со стоимостью равной 0).
+ Итоговая таблица должна быть отсортирована по id покупателя. Таблица состоит из следующих полей:
+*/
+
+
+with tab AS(
+select
+cust.customer_id as customers_id,
+concat(cust.first_name, ' ',cust.last_name) as customers_name,
+concat(empl.first_name, ' ',empl.last_name) as seller_name,
+TO_CHAR(sal.sale_date, 'YYYY-MM-DD') as sale_date,
+(sal.quantity * pro.price) as income
+from customers as cust left join sales as sal on cust.customer_id = sal.customer_id
+left join products as pro on sal.product_id = pro.product_id 
+left join employees as empl on sal.sales_person_id = empl.employee_id
+where sal.sale_date is not null
+),
+
+tab2 AS(
+select 
+customers_id,
+ROW_NUMBER() over (partition by customers_id) as custommers_number,
+customers_name,
+seller_name,
+sale_date,
+income
+from tab
+)
+
+select 
+customers_name as customer,
+sale_date,
+seller_name as seller
+from tab2 where custommers_number = 1 and income = 0 order by customers_id;
+
 
