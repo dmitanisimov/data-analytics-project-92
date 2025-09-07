@@ -147,7 +147,6 @@ from tab group by selling_month order by selling_month;
  Итоговая таблица должна быть отсортирована по id покупателя. Таблица состоит из следующих полей:
 */
 
-
 with tab AS(
 select
 cust.customer_id as customers_id,
@@ -164,7 +163,7 @@ where sal.sale_date is not null
 tab2 AS(
 select 
 customers_id,
-ROW_NUMBER() over (partition by customers_id) as custommers_number,
+ROW_NUMBER() over (partition by customers_id ORDER BY sale_date ASC) as custommers_number,
 customers_name,
 seller_name,
 sale_date,
@@ -177,5 +176,6 @@ customers_name as customer,
 sale_date,
 seller_name as seller
 from tab2 where custommers_number = 1 and income = 0 order by customers_id;
+
 
 
