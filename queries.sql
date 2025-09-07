@@ -53,7 +53,7 @@ select
 SUM (sal.quantity * pro.price) / COUNT(*) AS total_avg_sales
 from sales as sal
 left join products as pro ON sal.product_id = pro.product_id
-) order by income asc;
+) order by average_income asc;
 
 
 
