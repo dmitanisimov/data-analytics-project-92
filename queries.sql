@@ -66,7 +66,8 @@ left join products as pro ON sal.product_id = pro.product_id
 */
 
 
-
+/*
+Старая версия без сортировки по дням недели от понедельника
 
 with tab AS(
 select
@@ -85,6 +86,36 @@ day_of_week,
 income
 from tab  order by   weekday_number, seller asc;
 
+*/
+
+
+with tab as (
+select 
+CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
+FLOOR(SUM(sal.quantity * pro.price)) AS income,
+LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) AS day_of_week
+from sales AS sal
+left join products as pro on sal.product_id = pro.product_id
+left join employees as empl on sal.sales_person_id = empl.employee_id  
+group by seller, day_of_week
+)
+
+select
+seller,
+day_of_week,
+income
+from tab
+order by 
+ case day_of_week
+    when 'monday' then 1
+    when 'tuesday' then 2
+    when 'wednesday' then 3
+    when 'thursday' then 4
+    when 'friday' then 5
+    when 'saturday' then 6
+    when 'sunday' then 7
+  end,
+  seller;
 
 
 
