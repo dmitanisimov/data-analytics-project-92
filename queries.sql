@@ -136,7 +136,7 @@ left join products as pro on sal.product_id = pro.product_id where sal.sale_date
 select
 selling_month,
 COUNT(distinct customers_id) AS total_customers,
-ROUND(SUM(income),0) as income
+FLOOR(SUM(income)) AS income
 from tab group by selling_month order by selling_month;
 
 
