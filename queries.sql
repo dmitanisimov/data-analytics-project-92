@@ -73,7 +73,7 @@ select
 concat(empl.first_name, ' ',empl.last_name) as seller,
 FLOOR(SUM(sal.quantity * pro.price)) as income,
 EXTRACT(DOW FROM sal.sale_date) AS weekday_number,
-TRIM(TO_CHAR(sal.sale_date, 'Day')) as day_of_week
+LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) as day_of_week
 from sales as sal left join products as pro on sal.product_id = pro.product_id
 left join employees as empl on sal.sales_person_id = empl.employee_id  
 group by  seller, weekday_number, day_of_week
