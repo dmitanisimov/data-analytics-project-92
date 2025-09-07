@@ -163,7 +163,7 @@ where sal.sale_date is not null
 tab2 AS(
 select 
 customers_id,
-ROW_NUMBER() over (partition by customers_id ORDER BY sale_date ASC) as custommers_number,
+ROW_NUMBER() over (partition by customers_id) as custommers_number,
 customers_name,
 seller_name,
 sale_date,
