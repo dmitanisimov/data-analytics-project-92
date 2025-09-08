@@ -1,212 +1,222 @@
-
 -- МОДУЛЬ 4
--- Считаем количество клиентов в таблице customers. 
+-- Считаем количество клиентов в таблице customers.
 
-SELECT 
-COUNT(customer_id) as customers_count
-FROM customers;
+SELECT
+    COUNT(customer_id) AS customers_count
+FROM
+    customers;
 
 
 
 -- МОДУЛЬ 5
 /*
-Первый отчет о десятке лучших продавцов. Таблица состоит из трех колонок - данных о продавце, 
- суммарной выручке с проданных товаров и количестве проведенных сделок, и отсортирована по убыванию выручки:
+Первый отчет о десятке лучших продавцов. Таблица состоит из трех колонок — данных о продавце, 
+суммарной выручке с проданных товаров и количестве проведенных сделок, и отсортирована по убыванию выручки:
 */
 
+SELECT
+    CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
+    COUNT(sal.sales_person_id) AS operations,
+    FLOOR(SUM(sal.quantity * pro.price)) AS income
+FROM
+    sales AS sal
+    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+    LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
+GROUP BY
+    sal.sales_person_id,
+    seller
+ORDER BY
+    income DESC
+LIMIT
+    10;
 
-select
-concat(empl.first_name, ' ',empl.last_name) as seller,
-COUNT(sal.sales_person_id)  as operations,
-FLOOR(SUM(sal.quantity * pro.price)) as income
-from sales as sal left join products as pro on sal.product_id = pro.product_id 
-left join employees as empl on sal.sales_person_id = empl.employee_id  
-group by sal.sales_person_id, seller order by income desc limit 10;
+/*
+Второй отчет содержит информацию о продавцах, чья средняя выручка за сделку меньше средней выручки за сделку по всем продавцам.
+Таблица отсортирована по выручке по возрастанию.
+*/
 
+WITH tab AS (
+    SELECT
+        CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
+        sal.sales_person_id AS employees,
+        COUNT(sal.sales_person_id) AS operations,
+        SUM(sal.quantity * pro.price) AS income,
+        SUM(sal.quantity * pro.price) / COUNT(*) AS avg_per_sale
+    FROM
+        sales AS sal
+        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+        LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
+    GROUP BY
+        sal.sales_person_id,
+        empl.first_name,
+        empl.last_name
+)
 
+SELECT
+    seller,
+    FLOOR(avg_per_sale) AS average_income
+FROM
+    tab
+WHERE
+    avg_per_sale <= (
+        SELECT
+            SUM(sal.quantity * pro.price) / COUNT(*) AS total_avg_sales
+        FROM
+            sales AS sal
+            LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+    )
+ORDER BY
+    average_income ASC;
 
 
 /*
- Второй отчет содержит информацию о продавцах, чья средняя выручка за сделку меньше средней выручки за сделку по всем продавцам.
-  Таблица отсортирована по выручке по возрастанию.
+Третий отчет содержит информацию о выручке по дням недели.
+Каждая запись содержит имя и фамилию продавца, день недели и суммарную выручку.
+Отсортируйте данные по порядковому номеру дня недели и seller.
 */
-
-
-with tab AS(
-select
-concat(empl.first_name, ' ',empl.last_name) as seller,
-sal.sales_person_id as employees,
-COUNT(sal.sales_person_id)  as operations,
-SUM(sal.quantity * pro.price) as income,
-SUM(sal.quantity * pro.price) / COUNT(*) AS avg_per_sale
-from sales as sal left join products as pro on sal.product_id = pro.product_id 
-left join employees as empl on sal.sales_person_id = empl.employee_id  
-group by sal.sales_person_id, empl.first_name, empl.last_name  
-)
-
-select
-seller,
-FLOOR(avg_per_sale) as average_income
-from tab
-where avg_per_sale <=(
-select
-SUM (sal.quantity * pro.price) / COUNT(*) AS total_avg_sales
-from sales as sal
-left join products as pro ON sal.product_id = pro.product_id
-) order by average_income asc;
-
-
-
-
 
 /*
- Третий отчет содержит информацию о выручке по дням недели.
-  Каждая запись содержит имя и фамилию продавца, день недели и суммарную выручку.
-   Отсортируйте данные по порядковому номеру дня недели и seller
-*/
+Старая версия без сортировки по дням недели от понедельника:
 
-
-/*
-Старая версия без сортировки по дням недели от понедельника
-
-with tab AS(
-select
-concat(empl.first_name, ' ',empl.last_name) as seller,
-FLOOR(SUM(sal.quantity * pro.price)) as income,
-EXTRACT(DOW FROM sal.sale_date) AS weekday_number,
-LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) as day_of_week
-from sales as sal left join products as pro on sal.product_id = pro.product_id
-left join employees as empl on sal.sales_person_id = empl.employee_id  
-group by  seller, weekday_number, day_of_week
+WITH tab AS (
+    SELECT
+        CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
+        FLOOR(SUM(sal.quantity * pro.price)) AS income,
+        EXTRACT(DOW FROM sal.sale_date) AS weekday_number,
+        LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) AS day_of_week
+    FROM
+        sales AS sal
+        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+        LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id  
+    GROUP BY
+        seller, weekday_number, day_of_week
 )
 
-select 
-seller,
-day_of_week,
-income
-from tab  order by   weekday_number, seller asc;
-
+SELECT 
+    seller,
+    day_of_week,
+    income
+FROM
+    tab
+ORDER BY
+    weekday_number, seller ASC;
 */
 
-
-with tab as (
-select 
-CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
-FLOOR(SUM(sal.quantity * pro.price)) AS income,
-LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) AS day_of_week
-from sales AS sal
-left join products as pro on sal.product_id = pro.product_id
-left join employees as empl on sal.sales_person_id = empl.employee_id  
-group by seller, day_of_week
+WITH tab AS (
+    SELECT 
+        CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
+        FLOOR(SUM(sal.quantity * pro.price)) AS income,
+        LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) AS day_of_week
+    FROM
+        sales AS sal
+        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+        LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id  
+    GROUP BY
+        seller, day_of_week
 )
 
-select
-seller,
-day_of_week,
-income
-from tab
-order by 
- case day_of_week
-    when 'monday' then 1
-    when 'tuesday' then 2
-    when 'wednesday' then 3
-    when 'thursday' then 4
-    when 'friday' then 5
-    when 'saturday' then 6
-    when 'sunday' then 7
-  end,
-  seller;
-
-
-
-
+SELECT
+    seller,
+    day_of_week,
+    income
+FROM
+    tab
+ORDER BY 
+    CASE day_of_week
+        WHEN 'monday' THEN 1
+        WHEN 'tuesday' THEN 2
+        WHEN 'wednesday' THEN 3
+        WHEN 'thursday' THEN 4
+        WHEN 'friday' THEN 5
+        WHEN 'saturday' THEN 6
+        WHEN 'sunday' THEN 7
+    END,
+    seller;
 
 
 -- МОДУЛЬ 6
 
-
 /*
-Первый отчет - количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+. 
+Первый отчет — количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+. 
 Итоговая таблица должна быть отсортирована по возрастным группам и содержать следующие поля:
-age_category - возрастная группа
-age_count - количество человек в группе
+  - age_category — возрастная группа
+  - age_count — количество человек в группе
 */
 
-
-select
- case
-	 when age between 16 and 25 then '16-25'
-     when age between 26 and 40 then '26-40'
-     when age > 40 then '40+'
-     else 'other'
-     end as age_category,
- COUNT(customer_id) AS age_count
-from customers group by age_category order by age_category;
-
-
-
-
+SELECT
+  CASE
+    WHEN age BETWEEN 16 AND 25 THEN '16-25'
+    WHEN age BETWEEN 26 AND 40 THEN '26-40'
+    WHEN age > 40 THEN '40+'
+    ELSE 'other'
+  END AS age_category,
+  COUNT(customer_id) AS age_count
+FROM
+  customers
+GROUP BY
+  age_category
+ORDER BY
+  age_category;
 
 /*
 Во втором отчете предоставьте данные по количеству уникальных покупателей и выручке, которую они принесли. 
 Сгруппируйте данные по дате, которая представлена в числовом виде ГОД-МЕСЯЦ.
- Итоговая таблица должна быть отсортирована по дате по возрастанию и содержать следующие поля:
+Итоговая таблица должна быть отсортирована по дате по возрастанию и содержать следующие поля:
+  - selling_month — год и месяц продажи
+  - total_customers — количество уникальных покупателей
+  - income — суммарная выручка (округлённая в меньшую сторону)
 */
 
-
-
-with tab AS(
-select
-cust.customer_id as customers_id,
-TO_CHAR(sal.sale_date, 'YYYY-MM') as selling_month,
-(sal.quantity * pro.price) as income
-from customers as cust left join sales as sal on cust.customer_id = sal.customer_id
-left join products as pro on sal.product_id = pro.product_id where sal.sale_date is not null
+WITH tab AS (
+  SELECT
+    cust.customer_id AS customers_id,
+    TO_CHAR(sal.sale_date, 'YYYY-MM') AS selling_month,
+    (sal.quantity * pro.price) AS income
+  FROM
+    customers AS cust
+    LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
+    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+  WHERE
+    sal.sale_date IS NOT NULL
 )
 
-select
-selling_month,
-COUNT(distinct customers_id) AS total_customers,
-FLOOR(SUM(income)) AS income
-from tab group by selling_month order by selling_month;
-
-
+SELECT
+  selling_month,
+  COUNT(DISTINCT customers_id) AS total_customers,
+  FLOOR(SUM(income)) AS income
+FROM
+  tab
+GROUP BY
+  selling_month
+ORDER BY
+  selling_month;
 
 /*
 Третий отчет следует составить о покупателях, первая покупка
 которых была в ходе проведения акций (акционные товары отпускали со стоимостью равной 0).
- Итоговая таблица должна быть отсортирована по id покупателя. Таблица состоит из следующих полей:
+Итоговая таблица должна быть отсортирована по id покупателя. Таблица состоит из следующих полей:
+  - customer — имя и фамилия покупателя
+  - sale_date — дата первой покупки
+  - seller — имя и фамилия продавца
 */
 
-with tab AS(
-select
-cust.customer_id as customers_id,
-concat(cust.first_name, ' ',cust.last_name) as customers_name,
-concat(empl.first_name, ' ',empl.last_name) as seller_name,
-TO_CHAR(sal.sale_date, 'YYYY-MM-DD') as sale_date,
-(sal.quantity * pro.price) as income
-from customers as cust left join sales as sal on cust.customer_id = sal.customer_id
-left join products as pro on sal.product_id = pro.product_id 
-left join employees as empl on sal.sales_person_id = empl.employee_id
-where sal.sale_date is not null
+WITH tab AS (
+  SELECT
+    cust.customer_id AS customers_id,
+    CONCAT(cust.first_name, ' ', cust.last_name) AS customers_name,
+    CONCAT(empl.first_name, ' ', empl.last_name) AS seller_name,
+    TO_CHAR(sal.sale_date, 'YYYY-MM-DD') AS sale_date,
+    (sal.quantity * pro.price) AS income
+  FROM
+    customers AS cust
+    LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
+    LEFT JOIN products AS pro ON sal.product_id = pro.product_id 
+    LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
+  WHERE
+    sal.sale_date IS NOT NULL
 ),
 
-tab2 AS(
-select 
-customers_id,
-ROW_NUMBER() over (partition by customers_id) as custommers_number,
-customers_name,
-seller_name,
-sale_date,
-income
-from tab
-)
-
-select 
-customers_name as customer,
-sale_date,
-seller_name as seller
-from tab2 where custommers_number = 1 and income = 0 order by customers_id;
-
-
-
+tab2 AS (
+  SELECT 
+    customers_id,
+    ROW_NUMBER() OVER (PARTITION BY customers
