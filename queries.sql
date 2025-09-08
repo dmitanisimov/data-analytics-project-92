@@ -27,8 +27,8 @@ LIMIT
 
 WITH tab AS (
     SELECT
-        CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
         sal.sales_person_id AS employees,
+        CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
         COUNT(sal.sales_person_id) AS operations,
         SUM(sal.quantity * pro.price) AS income,
         SUM(sal.quantity * pro.price) / COUNT(*) AS avg_per_sale
@@ -53,14 +53,15 @@ WHERE
             SUM(sal.quantity * pro.price) / COUNT(*) AS total_avg_sales
         FROM
             sales AS sal
-            LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     )
 ORDER BY
     average_income ASC;
 
 -- МОДУЛЬ 4
 -- Третий отчет содержит информацию о выручке по дням недели.
--- Каждая запись содержит имя и фамилию продавца, день недели и суммарную выручку.
+-- Каждая запись содержит имя и фамилию продавца,
+-- день недели и суммарную выручку.
 -- Отсортируйте данные по порядковому номеру дня недели и seller.
 
 WITH tab AS (
@@ -70,8 +71,8 @@ WITH tab AS (
         LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) AS day_of_week
     FROM
         sales AS sal
-        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
-        LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
+    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+    LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
     GROUP BY
         seller,
         day_of_week
