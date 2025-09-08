@@ -97,7 +97,8 @@ ORDER BY
     seller;
 
 -- МОДУЛЬ 6
--- Первый отчет — количество покупателей в разных возрастных группах: 16-25, 26-40 и 40+.
+-- Первый отчет — количество покупателей в разных возрастных
+-- группах: 16-25, 26-40 и 40+.
 
 SELECT
     CASE
@@ -115,7 +116,8 @@ ORDER BY
     age_category;
 
 -- МОДУЛЬ 6
--- Второй отчет — количество уникальных покупателей и суммарная выручка по месяцам.
+-- Второй отчет — количество уникальных покупателей
+-- и суммарная выручка по месяцам.
 
 WITH tab AS (
     SELECT
@@ -124,8 +126,8 @@ WITH tab AS (
         (sal.quantity * pro.price) AS income
     FROM
         customers AS cust
-        LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
-        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+    LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
+    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     WHERE
         sal.sale_date IS NOT NULL
 )
@@ -153,9 +155,9 @@ WITH tab AS (
         (sal.quantity * pro.price) AS income
     FROM
         customers AS cust
-        LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
-        LEFT JOIN products AS pro ON sal.product_id = pro.product_id
-        LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
+    LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
+    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+    LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
     WHERE
         sal.sale_date IS NOT NULL
 ),
