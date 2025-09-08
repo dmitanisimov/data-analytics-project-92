@@ -165,11 +165,14 @@ WITH tab AS (
 tab2 AS (
     SELECT
         customers_id,
-        ROW_NUMBER() OVER (PARTITION BY customers_id ORDER BY sale_date) AS custommers_number,
         customers_name,
         seller_name,
         sale_date,
-        income
+        income,
+        ROW_NUMBER() OVER (
+            PARTITION BY customers_id
+            ORDER BY sale_date
+        ) AS custommers_number
     FROM
         tab
 )
