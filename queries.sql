@@ -1,7 +1,5 @@
-SELECT
-    COUNT(customer_id) AS customers_count1
-FROM
-    customers;
+SELECT COUNT(customer_id) AS customers_count
+FROM customers;
 
 -- МОДУЛЬ 4
 -- Первый отчет о десятке лучших продавцов.
