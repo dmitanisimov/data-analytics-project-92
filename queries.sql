@@ -49,8 +49,7 @@ FROM
     tab
 WHERE
     avg_per_sale <= (
-        SELECT
-            SUM(sal.quantity * pro.price) / COUNT(*) AS total_avg_sales
+        SELECT SUM(sal.quantity * pro.price) / COUNT(*) AS total_avg_sales
         FROM
             sales AS sal
         LEFT JOIN products AS pro ON sal.product_id = pro.product_id
