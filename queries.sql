@@ -219,4 +219,22 @@ WITH tab AS (
 tab2 AS (
   SELECT 
     customers_id,
-    ROW_NUMBER() OVER (PARTITION BY customers
+    ROW_NUMBER() OVER (PARTITION BY customers_id ORDER BY sale_date) AS custommers_number,
+    customers_name,
+    seller_name,
+    sale_date,
+    income
+  FROM
+    tab
+)
+
+SELECT 
+  customers_name AS customer,
+  sale_date,
+  seller_name AS seller
+FROM
+  tab2
+WHERE
+  custommers_number = 1 AND income = 0
+ORDER BY
+  customers_id;
