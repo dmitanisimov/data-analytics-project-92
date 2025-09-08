@@ -1,6 +1,3 @@
--- МОДУЛЬ 4
--- Считаем количество клиентов в таблице customers.
-
 SELECT
     COUNT(customer_id) AS customers_count
 FROM
