@@ -10,8 +10,8 @@ SELECT
     FLOOR(SUM(sal.quantity * pro.price)) AS income
 FROM
     sales AS sal
-    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
-    LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
+LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
 GROUP BY
     sal.sales_person_id,
     seller
