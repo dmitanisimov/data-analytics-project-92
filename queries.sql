@@ -1,6 +1,6 @@
 
 SELECT
-    COUNT(customer_id) AS customers_count
+    COUNT(customer_id) AS customers_count1
 FROM
     customers;
 
