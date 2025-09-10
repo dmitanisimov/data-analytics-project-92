@@ -111,20 +111,20 @@ ORDER BY
 -- Второй отчет — количество уникальных покупателей
 -- и суммарная выручка по месяцам.
 
-    SELECT
-        TO_CHAR(sal.sale_date, 'YYYY-MM') as selling_month,
-		COUNT(distinct cust.customer_id) AS total_customers,
-		FLOOR(SUM(sal.quantity * pro.price)) as income
-    FROM
-        customers AS cust
-    LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
-    LEFT JOIN products AS pro ON sal.product_id = pro.product_id
+SELECT
+    TO_CHAR(sal.sale_date, 'YYYY-MM') as selling_month,
+	COUNT(distinct cust.customer_id) AS total_customers,
+	FLOOR(SUM(sal.quantity * pro.price)) as income
+FROM
+    customers AS cust
+LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
+LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     WHERE
-        sal.sale_date IS NOT NULL
-    GROUP BY
-        TO_CHAR(sal.sale_date, 'YYYY-MM')
-    ORDER BY
-    	selling_month;
+    sal.sale_date IS NOT NULL
+GROUP BY
+    TO_CHAR(sal.sale_date, 'YYYY-MM')
+ORDER BY
+    selling_month;
 
 
 -- МОДУЛЬ 6
