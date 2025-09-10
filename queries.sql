@@ -29,9 +29,8 @@ WITH tab AS (
     SELECT
         sal.sales_person_id AS employees,
         CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
-        COUNT(sal.sales_person_id) AS operations,
         SUM(sal.quantity * pro.price) AS income,
-        SUM(sal.quantity * pro.price) / COUNT(*) AS avg_per_sale
+        AVG(sal.quantity * pro.price) AS avg_per_sale
     FROM
         sales AS sal
     LEFT JOIN products AS pro ON sal.product_id = pro.product_id
@@ -67,14 +66,16 @@ WITH tab AS (
     SELECT
         CONCAT(empl.first_name, ' ', empl.last_name) AS seller,
         FLOOR(SUM(sal.quantity * pro.price)) AS income,
-        LOWER(TRIM(TO_CHAR(sal.sale_date, 'Day'))) AS day_of_week
+        EXTRACT(ISODOW FROM sal.sale_date) AS day_of_week_sort,
+        TRIM(TO_CHAR(sal.sale_date, 'day')) AS day_of_week
     FROM
         sales AS sal
     LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
     GROUP BY
         seller,
-        day_of_week
+        day_of_week,
+        day_of_week_sort
 )
 
 SELECT
@@ -84,15 +85,7 @@ SELECT
 FROM
     tab
 ORDER BY
-    CASE day_of_week
-        WHEN 'monday' THEN 1
-        WHEN 'tuesday' THEN 2
-        WHEN 'wednesday' THEN 3
-        WHEN 'thursday' THEN 4
-        WHEN 'friday' THEN 5
-        WHEN 'saturday' THEN 6
-        WHEN 'sunday' THEN 7
-    END,
+    day_of_week_sort,
     seller;
 
 -- МОДУЛЬ 6
@@ -118,29 +111,21 @@ ORDER BY
 -- Второй отчет — количество уникальных покупателей
 -- и суммарная выручка по месяцам.
 
-WITH tab AS (
     SELECT
-        cust.customer_id AS customers_id,
-        TO_CHAR(sal.sale_date, 'YYYY-MM') AS selling_month,
-        (sal.quantity * pro.price) AS income
+        TO_CHAR(sal.sale_date, 'YYYY-MM') as selling_month,
+		COUNT(distinct cust.customer_id) AS total_customers,
+		FLOOR(SUM(sal.quantity * pro.price)) as income
     FROM
         customers AS cust
     LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
     LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     WHERE
         sal.sale_date IS NOT NULL
-)
+    GROUP BY
+        TO_CHAR(sal.sale_date, 'YYYY-MM')
+    ORDER BY
+    	selling_month;
 
-SELECT
-    selling_month,
-    COUNT(DISTINCT customers_id) AS total_customers,
-    FLOOR(SUM(income)) AS income
-FROM
-    tab
-GROUP BY
-    selling_month
-ORDER BY
-    selling_month;
 
 -- МОДУЛЬ 6
 -- Третий отчет — покупатели, чья первая покупка была акционной (income = 0).
@@ -151,29 +136,18 @@ WITH tab AS (
         CONCAT(cust.first_name, ' ', cust.last_name) AS customers_name,
         CONCAT(empl.first_name, ' ', empl.last_name) AS seller_name,
         TO_CHAR(sal.sale_date, 'YYYY-MM-DD') AS sale_date,
-        (sal.quantity * pro.price) AS income
+        (sal.quantity * pro.price) AS income,
+        ROW_NUMBER() OVER (
+            PARTITION BY cust.customer_id
+            ORDER BY sal.sale_date
+        ) AS custommers_number
     FROM
         customers AS cust
     LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
     LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
     WHERE
-        sal.sale_date IS NOT NULL
-),
-
-tab2 AS (
-    SELECT
-        customers_id,
-        customers_name,
-        seller_name,
-        sale_date,
-        income,
-        ROW_NUMBER() OVER (
-            PARTITION BY customers_id
-            ORDER BY sale_date
-        ) AS custommers_number
-    FROM
-        tab
+        sal.sale_date IS NOT NULL AND sal.quantity * pro.price = 0
 )
 
 SELECT
@@ -181,9 +155,8 @@ SELECT
     sale_date,
     seller_name AS seller
 FROM
-    tab2
+    tab
 WHERE
     custommers_number = 1
-    AND income = 0
 ORDER BY
     customers_id;
