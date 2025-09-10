@@ -147,7 +147,7 @@ WITH tab AS (
     LEFT JOIN products AS pro ON sal.product_id = pro.product_id
     LEFT JOIN employees AS empl ON sal.sales_person_id = empl.employee_id
     WHERE
-        sal.sale_date IS NOT NULL
+        sal.sale_date IS NOT NULL AND sal.quantity * pro.price = 0
 )
 
 SELECT
@@ -158,6 +158,5 @@ FROM
     tab
 WHERE
     custommers_number = 1
-    AND income = 0
 ORDER BY
     customers_id;
