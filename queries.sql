@@ -113,8 +113,8 @@ ORDER BY
 
 SELECT
     TO_CHAR(sal.sale_date, 'YYYY-MM') AS selling_month,
-		COUNT(DISTINCT cust.customer_id) AS total_customers,
-		FLOOR(SUM(sal.quantity * pro.price)) AS income
+    COUNT(DISTINCT cust.customer_id) AS total_customers,
+    FLOOR(SUM(sal.quantity * pro.price)) AS income
 FROM
     customers AS cust
 LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
