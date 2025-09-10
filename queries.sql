@@ -112,14 +112,14 @@ ORDER BY
 -- и суммарная выручка по месяцам.
 
 SELECT
-    TO_CHAR(sal.sale_date, 'YYYY-MM') as selling_month,
+    TO_CHAR(sal.sale_date, 'YYYY-MM') AS selling_month,
 	COUNT(distinct cust.customer_id) AS total_customers,
-	FLOOR(SUM(sal.quantity * pro.price)) as income
+	FLOOR(SUM(sal.quantity * pro.price)) AS income
 FROM
     customers AS cust
 LEFT JOIN sales AS sal ON cust.customer_id = sal.customer_id
 LEFT JOIN products AS pro ON sal.product_id = pro.product_id
-    WHERE
+WHERE
     sal.sale_date IS NOT NULL
 GROUP BY
     TO_CHAR(sal.sale_date, 'YYYY-MM')
